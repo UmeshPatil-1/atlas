@@ -33,6 +33,7 @@ import org.apache.atlas.model.typedef.AtlasBusinessMetadataDef;
 import org.apache.atlas.model.typedef.AtlasStructDef;
 import org.apache.atlas.repository.Constants;
 import org.apache.atlas.repository.graphdb.AtlasGraph;
+import org.apache.atlas.repository.graphdb.AtlasGraphQuery;
 import org.apache.atlas.repository.graphdb.AtlasVertex;
 import org.apache.atlas.type.AtlasBusinessMetadataType;
 import org.apache.atlas.type.AtlasStructType;
@@ -373,27 +374,37 @@ public class AtlasBusinessMetadataDefStoreV2 extends AtlasAbstractDefStoreV2<Atl
         }
 
         for (AtlasStructDef.AtlasAttributeDef attributeDef : businessMetadataDef.getAttributeDefs()) {
-            String applicableTypesStr = attributeDef.getOption(ATTR_OPTION_APPLICABLE_ENTITY_TYPES);
-            Set<String> applicableTypes = StringUtils.isBlank(applicableTypesStr) ? null : AtlasJson.fromJson(applicableTypesStr, Set.class);
+            validateAttributeReferences(businessMetadataDef, attributeDef);
+        }
+    }
 
-            if (CollectionUtils.isEmpty(applicableTypes)) {
-                continue;
-            }
+    private void validateAttributeReferences(AtlasBusinessMetadataDef bmDef, AtlasStructDef.AtlasAttributeDef attributeDef) throws AtlasBaseException {
+        String applicableTypesStr = attributeDef.getOption(ATTR_OPTION_APPLICABLE_ENTITY_TYPES);
+        Set<String> applicableTypes = StringUtils.isBlank(applicableTypesStr) ? null : AtlasJson.fromJson(applicableTypesStr, Set.class);
 
-            String qualifiedName      = AtlasStructType.AtlasAttribute.getQualifiedAttributeName(businessMetadataDef, attributeDef.getName());
-            String vertexPropertyName = AtlasStructType.AtlasAttribute.generateVertexPropertyName(businessMetadataDef, attributeDef, qualifiedName);
+        if (CollectionUtils.isEmpty(applicableTypes)) {
+            return;
+        }
 
-            boolean isPresent;
+        String qualifiedName      = AtlasStructType.AtlasAttribute.getQualifiedAttributeName(bmDef, attributeDef.getName());
+        String vertexPropertyName = AtlasStructType.AtlasAttribute.generateVertexPropertyName(bmDef, attributeDef, qualifiedName);
 
-            if (Boolean.TRUE.equals(attributeDef.getIsIndexable())) {
-                isPresent = isBusinessAttributePresent(vertexPropertyName, applicableTypes);
-            } else {
-                isPresent = isBusinessAttributePresentInGraph(vertexPropertyName, applicableTypes);
-            }
+        boolean isPresent;
+        long startTime = System.currentTimeMillis();
 
-            if (isPresent) {
-                throw new AtlasBaseException(AtlasErrorCode.TYPE_HAS_REFERENCES, typeName);
-            }
+        if (Boolean.TRUE.equals(attributeDef.getIsIndexable())) {
+            isPresent = isBusinessAttributePresent(vertexPropertyName, applicableTypes);
+        } else {
+            isPresent = isBusinessAttributePresentInGraph(vertexPropertyName, applicableTypes);
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.info("Reference check for attribute {} took {} ms. Found: {}",
+                    attributeDef.getName(), (System.currentTimeMillis() - startTime), isPresent);
+        }
+
+        if (isPresent) {
+            throw new AtlasBaseException(AtlasErrorCode.TYPE_HAS_REFERENCES, bmDef.getName());
         }
     }
 
@@ -419,19 +430,29 @@ public class AtlasBusinessMetadataDefStoreV2 extends AtlasAbstractDefStoreV2<Atl
     }
 
     private boolean isBusinessAttributePresentInGraph(String vertexPropertyName, Set<String> applicableTypes) {
-        for (String typeName : applicableTypes) {
+        if (graph == null || CollectionUtils.isEmpty(applicableTypes)) {
+            return false;
+        }
 
-            Iterable<AtlasVertex> vertices = graph.getVertices(Constants.ENTITY_TYPE_PROPERTY_KEY, typeName);
+        try {
+            for (String typeName : applicableTypes) {
 
-            if (vertices != null) {
-                for (AtlasVertex vertex : vertices) {
+                Iterable<AtlasVertex> vertices = graph.query()
+                        .has(Constants.ENTITY_TYPE_PROPERTY_KEY, typeName)
+                        .has(vertexPropertyName, AtlasGraphQuery.ComparisionOperator.NOT_EQUAL, (Object) null)
+                        .has(Constants.STATE_PROPERTY_KEY, AtlasEntity.Status.ACTIVE.name())
+                        .vertices();
 
-                    if (vertex.getProperty(vertexPropertyName, Object.class) != null &&
-                            AtlasGraphUtilsV2.getState(vertex) == AtlasEntity.Status.ACTIVE) {
-                        return true;
+                if (vertices != null && vertices.iterator().hasNext()) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.info("Found at least one reference for {} on type {}", vertexPropertyName, typeName);
                     }
+                    return true;
                 }
             }
+        } catch (Exception e) {
+            LOG.error("Error occurred while querying graph for references of property: {}", vertexPropertyName, e);
+            return true;
         }
         return false;
     }
