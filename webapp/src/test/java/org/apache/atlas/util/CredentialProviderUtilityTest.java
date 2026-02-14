@@ -18,6 +18,7 @@
 
 package org.apache.atlas.util;
 
+import org.apache.atlas.server.common.util.CredentialProviderUtility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

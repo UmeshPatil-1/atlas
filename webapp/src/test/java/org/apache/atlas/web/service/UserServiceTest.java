@@ -18,8 +18,9 @@
 
 package org.apache.atlas.web.service;
 
-import org.apache.atlas.web.dao.UserDao;
-import org.apache.atlas.web.model.User;
+import org.apache.atlas.server.common.dao.UserDao;
+import org.apache.atlas.server.common.model.User;
+import org.apache.atlas.server.common.service.UserService;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

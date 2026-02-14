@@ -20,7 +20,7 @@ package org.apache.atlas.notification.rest;
 
 import org.apache.atlas.ApplicationProperties;
 import org.apache.atlas.AtlasConstants;
-import org.apache.atlas.notification.rest.web.service.EmbeddedServer;
+import org.apache.atlas.server.common.service.EmbeddedServer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
@@ -84,7 +84,7 @@ public class RestNotificationMain {
         setApplicationHome();
         Configuration configuration = ApplicationProperties.get();
         final String enableTLSFlag = configuration.getString(SecurityProperties.TLS_ENABLED);
-        final String appHost = configuration.getString(SecurityProperties.BIND_ADDRESS, EmbeddedServer.REST_DEFAULT_BIND_ADDRESS);
+        final String appHost = configuration.getString(SecurityProperties.BIND_ADDRESS, EmbeddedServer.ATLAS_DEFAULT_BIND_ADDRESS);
 
         if (!isLocalAddress(InetAddress.getByName(appHost))) {
             String msg =

@@ -19,6 +19,7 @@
 
 package org.apache.atlas.web.security;
 
+import org.apache.atlas.server.common.security.AtlasAuthenticationFailureHandler;
 import org.json.simple.JSONObject;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;

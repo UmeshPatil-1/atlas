@@ -19,6 +19,8 @@
 package org.apache.atlas.web.security;
 
 import org.apache.atlas.ApplicationProperties;
+import org.apache.atlas.server.common.security.AtlasAuthenticationException;
+import org.apache.atlas.server.common.security.AtlasAuthenticationProvider;
 import org.apache.atlas.web.TestUtils;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.io.FileUtils;
@@ -76,7 +78,7 @@ public class FileAuthenticationTest {
         System.setProperty("atlas.conf", persistDir);
 
         applicationContext = new ClassPathXmlApplicationContext("test-spring-security.xml");
-        authProvider       = applicationContext.getBean(org.apache.atlas.web.security.AtlasAuthenticationProvider.class);
+        authProvider       = applicationContext.getBean(org.apache.atlas.server.common.security.AtlasAuthenticationProvider.class);
     }
 
     @Test

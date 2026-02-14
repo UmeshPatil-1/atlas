@@ -20,6 +20,7 @@
 package org.apache.atlas.web.security;
 
 import org.apache.atlas.AtlasConfiguration;
+import org.apache.atlas.server.common.security.AtlasAuthenticationSuccessHandler;
 import org.json.simple.JSONObject;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;

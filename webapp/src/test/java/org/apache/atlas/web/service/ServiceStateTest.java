@@ -20,23 +20,14 @@ package org.apache.atlas.web.service;
 
 import org.apache.atlas.AtlasConstants;
 import org.apache.atlas.AtlasException;
-import org.apache.atlas.exception.AtlasBaseException;
 import org.apache.atlas.ha.HAConfiguration;
-import org.apache.atlas.repository.audit.AtlasAuditService;
+import org.apache.atlas.server.common.service.ServiceState;
 import org.apache.commons.configuration.Configuration;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.lang.reflect.Field;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
@@ -47,9 +38,6 @@ import static org.testng.Assert.fail;
 public class ServiceStateTest {
     @Mock
     private Configuration configuration;
-
-    @Mock
-    private AtlasAuditService auditService;
 
     @BeforeMethod
     public void setup() {
@@ -120,7 +108,6 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
 
         serviceState.becomingActive();
 
@@ -133,13 +120,10 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
 
         serviceState.setActive();
 
         assertEquals(serviceState.getState(), ServiceState.ServiceStateValue.ACTIVE);
-        // Verify that audit service was called twice (SERVER_START and SERVER_STATE_ACTIVE)
-        verify(auditService, org.mockito.Mockito.times(2)).add(any(), any(), any(), anyObject(), anyObject(), anyLong());
     }
 
     @Test
@@ -148,7 +132,6 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
 
         serviceState.setPassive();
 
@@ -161,7 +144,6 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
 
         serviceState.setMigration();
 
@@ -196,7 +178,6 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
         serviceState.setActive();
 
         assertFalse(serviceState.isInstanceInTransition());
@@ -271,18 +252,11 @@ public class ServiceStateTest {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY)).thenReturn(true);
 
         ServiceState serviceState = new ServiceState(configuration);
-        setAuditService(serviceState, auditService);
 
-        doThrow(new AtlasBaseException("Test exception")).when(auditService).add(any(), any(), any(), anyObject(), anyObject(), anyInt());
-
+        // ServiceState in server-common no longer has auditService (decoupled from repository).
+        // Just verify state transition works even without audit.
         serviceState.setActive();
 
         assertEquals(serviceState.getState(), ServiceState.ServiceStateValue.ACTIVE);
-    }
-
-    private void setAuditService(ServiceState serviceState, AtlasAuditService auditService) throws Exception {
-        Field field = ServiceState.class.getDeclaredField("auditService");
-        field.setAccessible(true);
-        field.set(serviceState, auditService);
     }
 }

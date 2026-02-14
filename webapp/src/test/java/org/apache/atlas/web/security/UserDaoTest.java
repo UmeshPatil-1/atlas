@@ -16,8 +16,8 @@
  */
 package org.apache.atlas.web.security;
 
-import org.apache.atlas.web.dao.UserDao;
-import org.apache.atlas.web.model.User;
+import org.apache.atlas.server.common.dao.UserDao;
+import org.apache.atlas.server.common.model.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.testng.annotations.Test;

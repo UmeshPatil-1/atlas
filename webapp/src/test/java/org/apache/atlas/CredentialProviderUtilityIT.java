@@ -17,7 +17,7 @@
 package org.apache.atlas;
 
 import org.apache.atlas.security.SecurityProperties;
-import org.apache.atlas.util.CredentialProviderUtility;
+import org.apache.atlas.server.common.util.CredentialProviderUtility;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.alias.CredentialProvider;

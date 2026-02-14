@@ -23,6 +23,10 @@ import org.apache.atlas.AtlasException;
 import org.apache.atlas.exception.AtlasBaseException;
 import org.apache.atlas.ha.HAConfiguration;
 import org.apache.atlas.listener.ActiveStateChangeHandler;
+import org.apache.atlas.server.common.service.ActiveInstanceElectorService;
+import org.apache.atlas.server.common.service.ActiveInstanceState;
+import org.apache.atlas.server.common.service.CuratorFactory;
+import org.apache.atlas.server.common.service.ServiceState;
 import org.apache.atlas.util.AtlasMetricsUtil;
 import org.apache.commons.configuration.Configuration;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
@@ -77,7 +81,7 @@ public class ActiveInstanceElectorServiceTest {
 
         when(curatorFactory.leaderLatchInstance("id1", HAConfiguration.ATLAS_SERVER_ZK_ROOT_DEFAULT)).thenReturn(leaderLatch);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
 
@@ -96,7 +100,7 @@ public class ActiveInstanceElectorServiceTest {
 
         when(curatorFactory.leaderLatchInstance("id1", HAConfiguration.ATLAS_SERVER_ZK_ROOT_DEFAULT)).thenReturn(leaderLatch);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
 
@@ -107,7 +111,7 @@ public class ActiveInstanceElectorServiceTest {
     public void testLeaderElectionIsNotStartedIfNotInHAMode() throws AtlasException {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY, false)).thenReturn(false);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory,                 activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory,                 activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
 
@@ -126,7 +130,7 @@ public class ActiveInstanceElectorServiceTest {
 
         when(curatorFactory.leaderLatchInstance("id1", HAConfiguration.ATLAS_SERVER_ZK_ROOT_DEFAULT)).thenReturn(leaderLatch);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.stop();
@@ -146,7 +150,7 @@ public class ActiveInstanceElectorServiceTest {
 
         when(curatorFactory.leaderLatchInstance("id1", HAConfiguration.ATLAS_SERVER_ZK_ROOT_DEFAULT)).thenReturn(leaderLatch);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.stop();
@@ -158,7 +162,7 @@ public class ActiveInstanceElectorServiceTest {
     public void testNoActionOnStopIfHAModeIsDisabled() {
         when(configuration.getBoolean(HAConfiguration.ATLAS_SERVER_HA_ENABLED_KEY, false)).thenReturn(false);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.stop();
 
@@ -184,7 +188,7 @@ public class ActiveInstanceElectorServiceTest {
         changeHandlers.add(handler1);
         changeHandlers.add(handler2);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.isLeader();
@@ -205,7 +209,7 @@ public class ActiveInstanceElectorServiceTest {
 
         when(curatorFactory.leaderLatchInstance("id1", HAConfiguration.ATLAS_SERVER_ZK_ROOT_DEFAULT)).thenReturn(leaderLatch);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.isLeader();
@@ -234,7 +238,7 @@ public class ActiveInstanceElectorServiceTest {
 
         doThrow(new AtlasBaseException()).when(activeInstanceState).update("id1");
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.isLeader();
@@ -257,7 +261,7 @@ public class ActiveInstanceElectorServiceTest {
 
         doThrow(new AtlasBaseException()).when(activeInstanceState).update("id1");
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.isLeader();
@@ -289,7 +293,7 @@ public class ActiveInstanceElectorServiceTest {
         changeHandlers.add(handler1);
         changeHandlers.add(handler2);
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, changeHandlers, curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.notLeader();
@@ -300,7 +304,7 @@ public class ActiveInstanceElectorServiceTest {
 
     @Test
     public void testActiveStateSetOnBecomingLeader() {
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.isLeader();
 
@@ -312,7 +316,7 @@ public class ActiveInstanceElectorServiceTest {
 
     @Test
     public void testPassiveStateSetOnLoosingLeadership() {
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.notLeader();
 
@@ -336,7 +340,7 @@ public class ActiveInstanceElectorServiceTest {
 
         doThrow(new AtlasBaseException()).when(activeInstanceState).update("id1");
 
-        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState, metricsUtil);
+        ActiveInstanceElectorService activeInstanceElectorService = new ActiveInstanceElectorService(configuration, new HashSet<>(), curatorFactory, activeInstanceState, serviceState);
 
         activeInstanceElectorService.start();
         activeInstanceElectorService.isLeader();

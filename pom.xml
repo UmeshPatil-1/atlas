@@ -69,7 +69,9 @@
         <module>notification</module>
         <module>plugin-classloader</module>
         <module>repository</module>
+        <module>rest-notification-webapp</module>
         <module>server-api</module>
+        <module>server-common</module>
         <module>test-tools</module>
         <module>tools/atlas-index-repair</module>
         <module>tools/classification-updater</module>
@@ -85,6 +87,8 @@
         <antlr4.version>4.7</antlr4.version>
         <aopalliance.version>1.0</aopalliance.version>
         <aspectj.runtime.version>1.8.7</aspectj.runtime.version>
+        <aspectjrt.version>1.8.7</aspectjrt.version>
+        <aspectjweaver.version>1.8.7</aspectjweaver.version>
         <atlas.surefire.options />
         <avro.version>1.7.5</avro.version>
         <calcite.version>1.16.0</calcite.version>
@@ -99,6 +103,7 @@
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-conf.version>1.10</commons-conf.version>
         <commons-conf2.version>2.10.1</commons-conf2.version>
+        <commons-configuration2.version>2.10.1</commons-configuration2.version>
         <commons-el.version>1.0</commons-el.version>
         <commons-io.version>2.17.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
@@ -142,6 +147,7 @@
         <jaxb.api.version>2.3.1</jaxb.api.version>
         <jersey-spring.version>1.19.4</jersey-spring.version>
         <jersey.version>1.19</jersey.version>
+        <jersey2.version>2.35</jersey2.version>
         <jettison.version>1.5.4</jettison.version>
         <jetty-maven-plugin.stopWait>10</jetty-maven-plugin.stopWait>
         <jetty.version>9.4.56.v20240826</jetty.version>
@@ -153,11 +159,14 @@
         <kafka.scala.binary.version>2.12</kafka.scala.binary.version>
         <kafka.version>2.8.2</kafka.version>
         <keycloak.version>6.0.1</keycloak.version>
+        <libpam4j.version>1.11</libpam4j.version>
         <logback.version>1.3.15</logback.version>
         <lucene-solr.version>8.11.3</lucene-solr.version>
+        <maven-compiler-version>3.7.0</maven-compiler-version>
         <maven-plugin-sortpom.version>3.0.1</maven-plugin-sortpom.version>
         <maven-site-plugin.version>3.7</maven-site-plugin.version>
         <netty.version>4.1.125.Final</netty.version>
+        <nimbus-jose-jwt.version>9.37.3</nimbus-jose-jwt.version>
         <node-for-v1.version>v22.14.0</node-for-v1.version>
         <node-for-v2.version>v12.16.0</node-for-v2.version>
         <npm-for-v1.version>10.9.2</npm-for-v1.version>
@@ -260,6 +269,13 @@
                         <artifactId>junit</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- Nimbus JOSE + JWT -->
+            <dependency>
+                <groupId>com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>${nimbus-jose-jwt.version}</version>
             </dependency>
 
             <dependency>
@@ -404,6 +420,12 @@
 
             <dependency>
                 <groupId>org.apache.atlas</groupId>
+                <artifactId>atlas-authorization</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.atlas</groupId>
                 <artifactId>atlas-buildtools</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -488,6 +510,12 @@
             <dependency>
                 <groupId>org.apache.atlas</groupId>
                 <artifactId>atlas-server-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.atlas</groupId>
+                <artifactId>atlas-server-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -827,6 +855,19 @@
                 <version>${zookeeper.version}</version>
             </dependency>
 
+            <!-- AspectJ -->
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjrt</artifactId>
+                <version>${aspectjrt.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.aspectj</groupId>
+                <artifactId>aspectjweaver</artifactId>
+                <version>${aspectjweaver.version}</version>
+            </dependency>
+
             <!-- JSON -->
             <dependency>
                 <groupId>org.codehaus.jettison</groupId>
@@ -890,9 +931,53 @@
             </dependency>
 
             <dependency>
+                <groupId>org.glassfish.jersey.containers</groupId>
+                <artifactId>jersey-container-servlet</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <!-- Jersey 2.x -->
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-server</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.ext</groupId>
+                <artifactId>jersey-spring5</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.media</groupId>
+                <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey2.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>${jacoco.version}</version>
+            </dependency>
+
+            <!-- PAM authentication -->
+            <dependency>
+                <groupId>org.kohsuke</groupId>
+                <artifactId>libpam4j</artifactId>
+                <version>${libpam4j.version}</version>
             </dependency>
 
             <dependency>
